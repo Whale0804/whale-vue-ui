@@ -25,12 +25,12 @@
                             {{collapse?'展开':'折叠'}}
                         </el-button>
                     </div>
-                    <ul class="file-list">
-                         <li v-for="file in props.fileList" :key="file.id">
+                    <div class="file-list" v-show="!collapse">
+                         <div v-for="file in props.fileList" :key="file.id">
                              <uploader-file :class="'file_' + file.id" ref="files" :file="file" :list="true"></uploader-file>
-                         </li>
+                         </div>
                          <div class="no-file" v-if="!props.fileList.length"><i class="nucfont inuc-empty-file"></i> 暂无待上传文件</div>
-                    </ul>
+                    </div>
                 </el-card>
             </uploader-list>
         </uploader>
@@ -51,11 +51,12 @@
           testChunks: true,   //是否开启服务器分片校验
           // 服务器分片校验函数，秒传及断点续传基础
           checkChunkUploadedByResponse: function (chunk, message) {
-            let objMessage = JSON.parse(message);
-            if (objMessage.skipUpload) {
-              return true;
-            }
-            return (objMessage.uploaded || []).indexOf(chunk.offset + 1) >= 0
+            console.log(message)
+            // let objMessage = JSON.parse(message);
+            // if (objMessage.skipUpload) {
+            //   return true;
+            // }
+            // return (objMessage.uploaded || []).indexOf(chunk.offset + 1) >= 0
           },
           query() {
           }
@@ -63,7 +64,7 @@
         attrs: {
           accept: '*'
         },
-        panelShow: true,   //选择文件后，展示上传panel
+        panelShow: false,   //选择文件后，展示上传panel
         collapse: false,
       }
     },
@@ -150,14 +151,7 @@
         };
       },
       fileListShow() {
-        let $list = document.getElementsByClassName('file-list')
-        if ($list.is(':visible')) {
-          $list.slideUp();
-          this.collapse = true;
-        } else {
-          $list.slideDown();
-          this.collapse = false;
-        }
+        this.collapse = !this.collapse;
       },
       close() {
         this.uploader.cancel();
@@ -195,9 +189,7 @@
             overflow-x: hidden;
             overflow-y: auto;
             background-color: #fff;
-            > li {
-                background-color: #fff;
-            }
+
         }
         .no-file {
             position: absolute;
