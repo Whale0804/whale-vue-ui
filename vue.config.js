@@ -15,7 +15,17 @@ module.exports = {
   publicPath, // 根据你的实际情况更改这里
   lintOnSave: true,
   devServer: {
-    publicPath // 和 publicPath 保持一致
+    publicPath, // 和 publicPath 保持一致
+    proxy: {
+      '/v1': {
+        target: 'http://localhost:8080/v1',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/v1': ''
+        }
+      }
+    }
   },
   css: {
     loaderOptions: {

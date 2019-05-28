@@ -45,7 +45,7 @@ service.interceptors.request.use(
     // 在请求发送之前做一些处理
     const token = util.cookies.get('token')
     // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
-    config.headers['X-Token'] = token
+    config.headers['Authorization'] = token
     return config
   },
   error => {
@@ -62,6 +62,7 @@ service.interceptors.response.use(
     const dataAxios = response.data
     // 这个状态码是和后端约定的
     const { code } = dataAxios
+    console.log(code)
     // 根据 code 进行判断
     if (code === undefined) {
       // 如果没有 code 代表这不是项目后端开发的接口 比如可能是 D2Admin 请求最新版本
@@ -78,7 +79,28 @@ service.interceptors.response.use(
           break
         default:
           // 不是正确的 code
-          errorCreate(`${dataAxios.msg}: ${response.config.url}`)
+          let message;
+          switch (code){
+            case 400: message = '请求错误'; break
+            case 401: message = '未授权，请登录'; break
+            case 403: message = '拒绝访问'; break
+            case 404: message = `请求地址出错: ${error.response.config.url}`; break
+            case 408: message = '请求超时'; break
+            case 500: message = '服务器内部错误'; break
+            case 501: message = '服务未实现'; break
+            case 502: message = '网关错误'; break
+            case 503: message = '服务不可用'; break
+            case 504: message = '网关超时'; break
+            case 505: message = 'HTTP版本不受支持'; break
+            case 10005: message = '用户名密码错误'; break
+            default: break
+          }
+          errorCreate(`${message}: ${response.config.url}`)
+          // Message({
+          //   message: message,
+          //   type: 'error',
+          //   duration: 5 * 1000
+          // })
           break
       }
     }

@@ -11,15 +11,15 @@ import i18n from './i18n'
 //插件
 import bus from './libs/bus';
 Vue.prototype.$bus = bus
-
+import tool from './libs/tool';
+Vue.prototype.$tool = tool
+import VueUploadComponent from 'vue-upload-component';
+Vue.use(VueUploadComponent)
 // 菜单和路由设置
 import router from './router'
 import menuHeader from '@/menu/header'
 import menuAside from '@/menu/aside'
 import { frameInRoutes } from '@/router/routes'
-//文件上传插件
-import uploader from 'vue-simple-uploader'
-Vue.use(uploader)
 // 核心插件
 Vue.use(d2Admin)
 

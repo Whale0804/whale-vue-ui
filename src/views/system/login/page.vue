@@ -118,8 +118,8 @@ export default {
       ],
       // 表单
       formLogin: {
-        username: 'admin',
-        password: 'admin',
+        username: '15698253358',
+        password: '123456',
         code: 'v9am'
       },
       // 校验
@@ -171,10 +171,9 @@ export default {
           // 注意 这里的演示没有传验证码
           // 具体需要传递的数据请自行修改代码
           this.login({
-            username: this.formLogin.username,
+            loginname: this.formLogin.username,
             password: this.formLogin.password
-          })
-            .then(() => {
+          }).then(() => {
               // 重定向对象不存在则返回顶层路径
               this.$router.replace(this.$route.query.redirect || '/')
             })

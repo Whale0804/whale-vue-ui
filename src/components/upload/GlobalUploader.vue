@@ -1,40 +1,63 @@
 <template>
-    <div id="global-uploader">
-        <!-- 上传 -->
-        <uploader
-                ref="uploader"
-                :options="options"
-                :autoStart="false"
-                @file-added="onFileAdded"
-                @file-success="onFileSuccess"
-                @file-progress="onFileProgress"
-                @file-error="onFileError"
-                class="uploader-app">
-            <uploader-unsupport></uploader-unsupport>
-            <uploader-btn id="global-uploader-btn" :attrs="attrs" ref="uploadBtn">选择文件</uploader-btn>
-            <uploader-list v-show="panelShow">
-                <el-card shadow="never" slot-scope="props">
-                    <div slot="header" class="clearfix">
-                        <span>文件列表</span>
-                        <el-button style="float: right; padding: 3px 0;margin-left: 10px;" type="text" @click="close" >
-                            <el-tooltip class="item" effect="dark" content="关闭" placement="top">
-                                <i class="el-icon-error"></i>
-                            </el-tooltip>
-                        </el-button>
-                        <el-button style="float: right; padding: 3px 0;" type="text" @click="fileListShow" >
-                            {{collapse?'展开':'折叠'}}
-                        </el-button>
-                    </div>
-                    <div class="file-list" v-show="!collapse">
-                         <div v-for="file in props.fileList" :key="file.id">
-                             <uploader-file :class="'file_' + file.id" ref="files" :file="file" :list="true"></uploader-file>
-                         </div>
-                         <div class="no-file" v-if="!props.fileList.length"><i class="nucfont inuc-empty-file"></i> 暂无待上传文件</div>
-                    </div>
-                </el-card>
-            </uploader-list>
-        </uploader>
-    </div>
+    <el-card shadow="never" v-if="isShow" class="global-uploader">
+        <div slot="header" class="clearfix">
+            <span>文件列表</span>
+            <el-button style="float: right; padding: 3px 0;margin-left: 10px;" type="text" @click="close" >
+                <el-tooltip class="item" effect="dark" content="关闭" placement="top">
+                    <i class="el-icon-error"></i>
+                </el-tooltip>
+            </el-button>
+            <el-button style="float: right; padding: 3px 0;" type="text" @click="fileListShow" >
+                {{collapse?'展开':'折叠'}}
+            </el-button>
+        </div>
+        <div class="file-list" v-show="!collapse">
+            <el-table  :data="files" :row-class-name="tableRowClassName" max-height="440">
+                <el-table-column
+                        type="index"
+                        :index="indexMethod"></el-table-column>
+                <el-table-column
+                        label="类型"
+                        width="60">
+                    <template slot-scope="scope">
+                        <img v-if="scope.row.thumb" :src="scope.row.thumb" width="40" height="40" />
+                        <span v-else>No Image</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="name"
+                        label="文件"></el-table-column>
+                <el-table-column
+                        prop="size"
+                        label="大小"
+                        width="80" :formatter="formatter"></el-table-column>
+                <el-table-column
+                        prop="speed"
+                        label="速度"
+                        width="110" :formatter="formatterSpeed"></el-table-column>
+                <el-table-column
+                        prop="speed"
+                        label="进度"
+                        width="170">
+                    <template slot-scope="scope">
+                        <el-progress :text-inside="true" :stroke-width="18" :percentage="parseFloat(scope.row.progress)" status="success"></el-progress>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="115">
+                    <template slot-scope="scope">
+                        <el-dropdown size="small" split-button type="primary">
+                            操作
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item @click="handleSuspendClick(scope.$index)">暂停</el-dropdown-item>
+                                <el-dropdown-item @click="handleCancelClick(scope.$index)">取消</el-dropdown-item>
+                                <el-dropdown-item @click="handleDeleteClick(scope.$index)">删除</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+    </el-card>
 </template>
 
 <script>
@@ -43,127 +66,64 @@
     name: 'GlobalUploader',
     data() {
       return {
-        options: {
-          target: "",
-          chunkSize: '2048000',
-          fileParameterName: 'upfile',
-          maxChunkRetries: 3,
-          testChunks: true,   //是否开启服务器分片校验
-          // 服务器分片校验函数，秒传及断点续传基础
-          checkChunkUploadedByResponse: function (chunk, message) {
-            console.log(message)
-            // let objMessage = JSON.parse(message);
-            // if (objMessage.skipUpload) {
-            //   return true;
-            // }
-            // return (objMessage.uploaded || []).indexOf(chunk.offset + 1) >= 0
-          },
-          query() {
-          }
-        },
-        attrs: {
-          accept: '*'
-        },
-        panelShow: false,   //选择文件后，展示上传panel
         collapse: false,
+        isShow: false,
+        files:[]
       }
     },
     created() {
     },
     mounted() {
       this.$bus.$on('openUploader', query => {
-        this.params = query || {};
-        if (this.$refs.uploadBtn) {
-          document.getElementById("global-uploader-btn").click();
-        }
+        this.isShow = true;
+        this.files = query.files;
       });
     },
     computed: {
-      //Uploader实例
-      uploader() {
-        return this.$refs.uploader.uploader;
-      }
+
     },
     methods: {
-      onFileAdded(file) {
-        this.$bus.$emit('fileAdded');
-        this.panelShow = true;
-        this.computeMD5(file);
+      close () {
+        this.isShow = false;
+        this.files=[];
       },
-      onFileProgress(rootFile, file, chunk) {
-        console.log(`上传中 ${file.name}，chunk：${chunk.startByte / 1024 / 1024} ~ ${chunk.endByte / 1024 / 1024}`)
-      },
-      onFileSuccess(rootFile, file, response, chunk) {
-        let res = JSON.parse(response);
-        // 服务器自定义的错误，这种错误是Uploader无法拦截的
-        if (!res.result) {
-          this.$message({ message: res.message, type: 'error' });
-          return
-        }
-        // 如果服务端返回需要合并
-        if (res.needMerge) {
-          // api.mergeSimpleUpload({
-          //   tempName: res.tempName,
-          //   fileName: file.name,
-          //   ...this.params,
-          // }).then(res => {
-          //   // 文件合并成功
-          //   this.$bus.$emit('fileSuccess');
-          // }).catch(e => {});
-          // 不需要合并
-        } else {
-          this.$bus.$emit('fileSuccess');
-          console.log('上传成功');
-        }
-      },
-      onFileError(rootFile, file, response, chunk) {
-        this.$message({
-          message: response,
-          type: 'error'
+      handleSuspendClick (index) {
+        this.$bus.$emit("doStop",{
+          file: this.files[index]
         })
       },
-      /**
-       * 计算md5，实现断点续传及秒传
-       * @param file
-       */
-      computeMD5(file) {
-        let fileReader = new FileReader();
-        let time = new Date().getTime();
-        let md5 = '';
-        file.pause();
-        fileReader.readAsArrayBuffer(file.file);
-        fileReader.onload = (e => {
-          if (file.size != e.target.result.byteLength) {
-            this.error('Browser reported success but could not read the file until the end.');
-            return
-          }
-          md5 = SparkMD5.ArrayBuffer.hash(e.target.result);
-          // 添加额外的参数
-          this.uploader.opts.query = {
-            ...this.params
-          }
-          console.log(`MD5计算完毕：${file.id} ${file.name} MD5：${md5} 用时：${new Date().getTime() - time} ms`);
-          file.uniqueIdentifier = md5;
-          file.resume();
-        });
-        fileReader.onerror = function () {
-          this.error('FileReader onerror was triggered, maybe the browser aborted due to high memory usage.');
-        };
+      handleCancelClick (index) {
+        this.$bus.$emit("doCancel",{
+          file: this.files[index]
+        })
       },
-      fileListShow() {
+      handleDeleteClick (index) {
+        alert(1)
+        console.log(index)
+        this.files.splice(index,1)
+        this.$bus.$emit("doDelete",{
+          file: this.files[index]
+        })
+      },
+      fileListShow (){
         this.collapse = !this.collapse;
       },
-      close() {
-        this.uploader.cancel();
-        this.panelShow = false;
+      formatter (row, column){
+        return this.$tool.formatSize(row.size)
       },
-      error(msg) {
-        this.$notify({
-          title: this.$t('c.false'),
-          message: msg,
-          type: 'error',
-          duration: 2000
-        })
+      formatterSpeed (row, column) {
+        return this.$tool.formatSpeed(row.speed)
+      },
+      tableRowClassName({row, rowIndex}) {
+        if (rowIndex === 1) {
+          return 'warning-row';
+        } else if (rowIndex === 3) {
+          return 'success-row';
+        }
+        return '';
+      },
+      indexMethod(index) {
+        return index + 1;
       }
     },
     watch: {},
@@ -175,21 +135,18 @@
 </script>
 
 <style scoped lang="scss">
-    #global-uploader {
+    .global-uploader {
         position: fixed;
         z-index: 20;
         right: 20px;
         bottom: 0;
-        .uploader-app {
-            width: 520px;
-        }
+        width: 75%;
         .file-list {
             position: relative;
-            height: 240px;
+            height: 450px;
             overflow-x: hidden;
             overflow-y: auto;
             background-color: #fff;
-
         }
         .no-file {
             position: absolute;
