@@ -2,7 +2,7 @@
     <d2-container class="file-list-wrapper">
         <div>
             <el-breadcrumb  separator-class="el-icon-arrow-right" class="file-bread-wrapper">
-                <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :to="{path: item.path }" :key="index" style="width:fit-content;width:-webkit-fit-content;">
+                <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :to="{path: item.path }" :key="index">
                     <span>{{item.name}}</span>
                 </el-breadcrumb-item>
             </el-breadcrumb>
@@ -28,17 +28,25 @@
                             class="el-icon-folder el-icon--right"></i></el-button>
                 </transition>
             </div>
-            <el-input placeholder="请输入内容" size="medium" v-model="searchTxt" class="input-with-select">
-                <el-select v-model="selectType" slot="prepend" placeholder="请选择">
-                    <el-option label="餐厅名" value="1"></el-option>
-                    <el-option label="订单号" value="2"></el-option>
-                    <el-option label="用户电话" value="3"></el-option>
-                </el-select>
-                <el-button slot="append" icon="el-icon-search"></el-button>
-            </el-input>
+<!--            <el-input placeholder="请输入内容" size="medium" v-model="searchTxt" class="input-with-select">-->
+<!--                <el-select v-model="selectType" slot="prepend" placeholder="请选择">-->
+<!--                    <el-option label="餐厅名" value="1"></el-option>-->
+<!--                    <el-option label="订单号" value="2"></el-option>-->
+<!--                    <el-option label="用户电话" value="3"></el-option>-->
+<!--                </el-select>-->
+<!--                <el-button slot="append" icon="el-icon-search"></el-button>-->
+<!--            </el-input>-->
+            <div @click="handleContentListClick">
+                <d2-icon name="list" class="file-list-icon" :style="{color: active ?'#409EFF':''}"/>
+            </div>
+            <div @click="handleContentGridClick">
+                <d2-icon name="th" class="file-grid-icon" :style="{color: !active ?'#409EFF':''}"/>
+            </div>
+
         </div>
-        <div class="file-list-container">
-            <el-table
+
+        <div class="file-list-container" >
+            <el-table v-if="isTable"
                     ref="multipleTable"
                     :data="tableData"
                     tooltip-effect="dark"
@@ -64,7 +72,11 @@
                         show-overflow-tooltip>
                 </el-table-column>
             </el-table>
+            <div v-else class="file-grid-content">
+                <div class="file-item" v-for="(item,index) in 100"></div>
+            </div>
         </div>
+
     </d2-container>
 </template>
 <script>
@@ -73,6 +85,8 @@
         data() {
             return {
                 isAll: false,
+                isTable: true,
+                active:true,
                 selectType: '',
                 searchTxt: '',
                 tableData: [{
@@ -195,14 +209,22 @@
         },
         watch: {},
         methods: {
-            selectAll() {
-                this.isAll = !this.isAll
-                this.$refs.multipleTable.toggleAllSelection();
-            },
-            handleSelectionChange(val) {
-                this.multipleSelection = val;
-                console.log(val)
-            }
+          selectAll() {
+            this.isAll = !this.isAll
+            this.$refs.multipleTable.toggleAllSelection();
+          },
+          handleSelectionChange(val) {
+            this.multipleSelection = val;
+            console.log(val)
+          },
+          handleContentListClick (){
+              this.isTable = true;
+              this.active = true;
+          },
+          handleContentGridClick (){
+              this.isTable = false;
+              this.active = false;
+          }
         }
     }
 </script>
@@ -222,8 +244,8 @@
         align-items: center;
         background: #EDF1F6;
         margin-top: 12px;
-        padding: 12px;
-
+        padding: 8px;
+        border-radius: 4px;
         .file-list-header-btn {
             flex: 1;
         }
@@ -239,6 +261,26 @@
         .input-with-select .el-input-group__prepend {
             background-color: #fff;
         }
+
+        .file-list-icon {
+            padding: 0 12px;
+            font-size: 20px;
+            color: #606266;
+        }
+
+        .file-list-icon:hover {
+            color: #409EFF;
+        }
+
+        .file-grid-icon {
+            padding: 0 12px;
+            font-size: 20px;
+            color: #606266;
+        }
+
+        .file-grid-icon:hover{
+            color: #409EFF;
+        }
     }
 
     .file-list-container {
@@ -247,6 +289,23 @@
 
         thead {
             display: none;
+        }
+
+        .file-grid-content {
+            width: 100%;
+
+            /*flex布局（作用于容器）*/
+            display: flex;
+            flex-direction:row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+            .file-item {
+                width: 110px;
+                height: 110px;
+                background: #444;
+                margin: 10px;
+            }
         }
     }
 
