@@ -136,6 +136,16 @@
                 actionShow: false
             }
         },
+        mounted () {
+            // let body = document.querySelector('body')
+            // body.addEventListener('click',(e)=>{
+            //     if(e.target.className == 'upload-wrapper'){
+            //         this.actionShow = true
+            //     }else {
+            //         this.actionShow = false
+            //     }
+            // })
+        },
         computed: {
             ...mapState('d2admin', {
                 keepAlive: state => state.page.keepAlive,
