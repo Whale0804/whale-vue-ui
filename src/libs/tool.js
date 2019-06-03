@@ -38,5 +38,12 @@ export default {
             }
         }
         return false;
+    },
+    subSting (str,len){
+        let subStr1 = str.substr(0,len);
+        let subStr2 = str.substr(str.length-len+1,len);
+        let subStr = subStr1 + "..." + subStr2 ;
+        return subStr;
     }
+
 }
