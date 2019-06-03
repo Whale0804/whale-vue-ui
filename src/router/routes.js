@@ -28,7 +28,7 @@ const frameIn = [
         meta: {
           auth: true
         },
-        component: _import('upload/upload')
+        component: _import('upload/file-list')
       },
       // 系统 前端日志
       {

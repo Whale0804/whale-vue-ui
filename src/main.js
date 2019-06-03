@@ -13,8 +13,6 @@ import bus from './libs/bus';
 Vue.prototype.$bus = bus
 import tool from './libs/tool';
 Vue.prototype.$tool = tool
-import VueUploadComponent from 'vue-upload-component';
-Vue.use(VueUploadComponent)
 // 菜单和路由设置
 import router from './router'
 import menuHeader from '@/menu/header'
