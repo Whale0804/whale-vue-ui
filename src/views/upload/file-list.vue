@@ -57,28 +57,41 @@
                         width="55">
                 </el-table-column>
                 <el-table-column
-                        label="日期"
-                        width="120">
-                    <template slot-scope="scope">{{ scope.row.date }}</template>
+                        label="名称"
+                        width="420"
+                        prop="date"
+                        sortable>
+                    <template slot-scope="scope">
+                        <img src="../../assets/list-icons/folder.png" class="list-img-item" alt="">
+                        <span class="file-item-name">
+                            {{scope.row.name}}
+                        </span>
+                    </template>
                 </el-table-column>
                 <el-table-column
-                        prop="name"
-                        label="姓名"
+                        prop="date"
+                        label="修改日期"
                         width="120">
+                    <template slot-scope="scope">
+                        {{ scope.row.date }}
+                    </template>
                 </el-table-column>
                 <el-table-column
-                        prop="address"
-                        label="地址"
+                        prop="size"
+                        label="大小"
                         show-overflow-tooltip>
                 </el-table-column>
             </el-table>
             <div v-else class="file-grid-content">
                 <el-row :gutter="10">
-                    <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="2" class="file-item" v-for="(item,index) in fileList" :key="index">
-                        <img :src="item.icon" alt="">
-                        <span :title="item.name">
-                        {{subString(item.name)}}
-                    </span>
+                    <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="2" :class="`${'file-item'} ${item.select? 'file-item-active':''}`" v-for="(item,index) in fileList" :key="index" @click.native="HandleFileItemClick(index)">
+                        <d2-icon name="check-circle" class="file-item-grid-icon"/>
+                        <div class="file-item-grid-img" :style="{backgroundImage: 'url(' + item.icon + ')', backgroundSize:'56px 56px',backgroundRepeat:'no-repeat',backgroundPosition:'center center'}">
+                            <img :src="item.icon" alt="" style="visibility: hidden;">
+                        </div>
+                        <div :title="item.name" class="file-item-grid-name">
+                            {{item.name}}
+                        </div>
                     </el-col>
                 </el-row>
             </div>
@@ -92,116 +105,20 @@
         data() {
             return {
                 isAll: false,
-                isTable: true,
+                isTable: !true,
                 active: true,
                 selectType: '',
                 searchTxt: '',
                 fileList:[],
                 tableData: [{
+                    name: '王小虎',
                     date: '2016-05-03',
+                    size: '上海市普陀区金沙江路 1518 弄'
+                },{
                     name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-02',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-04',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-01',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
                     date: '2016-05-03',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-02',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-04',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-01',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-08',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-06',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                    date: '2016-05-07',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄'
-                }],
+                    size: '上海市普陀区金沙江路 1518 弄'
+                }, ],
                 multipleSelection: [],
                 breadcrumbList: [
                     {
@@ -245,17 +162,24 @@
                         this.fileList.push({
                             name: '这是一个压缩包'+i+'.zip',
                             type: 'zip',
+                            select: false,
                             icon: require('../../assets/list-icons/file_zip.png')
                         })
                     }else{
                         this.fileList.push({
                             name: '这是一个文件夹'+i,
                             type: 'folder',
+                            select: false,
                             icon: require('../../assets/list-icons/folder.png')
                         })
                     }
                 }
-            }
+            },
+            HandleFileItemClick (index) {
+              let select = this.fileList[index].select;
+              this.fileList[index].select = select === true ? false : true;
+              console.log(this.fileList[index])
+            },
         }
     }
 </script>
@@ -320,9 +244,9 @@
         margin-top: 12px;
         width: 100%;
 
-        thead {
-            display: none;
-        }
+        /*thead {*/
+        /*    display: none;*/
+        /*}*/
 
         .file-grid-content {
             width: 100%;
@@ -331,31 +255,76 @@
 
             .file-item {
                 float: left;
-                width: 110px;
-                height: 130px;
-                display: flex;
-                flex-direction: column;
-                margin: 15px 30px;
+                width: 120px;
+                height: 127px;
+                float: left;
+                margin: 20px 0 0 30px;
+                text-align: center;
                 cursor: pointer;
-
-                img {
-                    width: 100%;
+                position: relative;
+                .file-item-grid-img {
+                    position: relative;
+                    margin: 9px auto 0;
+                    width: 84px;
+                    height: 84px;
+                    background-repeat: no-repeat;
+                    overflow: hidden;
+                    img {
+                        position: absolute;
+                    }
                 }
 
-                span {
-                    width: 110px;
-                    font-size: 14px;
-                    color: #333;
-                    overflow: hidden;
-                    text-align: left;
-                    text-overflow: ellipsis;
+                .file-item-grid-name {
+                    display: block;
                     white-space: nowrap;
-                    padding: 0 4px;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    margin: 6px 5px 5px;
+                    color: #424e67;
+                    cursor: default;
+                    font-size: 14px;
+                }
+                .file-item-grid-name:hover {
+                    color: #66b1ff;
+                }
+                .file-item-grid-icon {
+                    font-size: 19px;
+                    color: #09AAFF;
+                    position: absolute;
+                    left: 4px;
+                    top: 4px;
+                    display: none;
+                }
+            }
+            .file-item:hover {
+                background: #F2FAFF;
+                border-radius: 4px;
+                .file-item-grid-icon {
+                    opacity:0.4;
+                    display: inline;
+                }
+            }
+            .file-item-active {
+                background-color: #f1f5fa;
+                border: 1px solid #90d8ff;
+                border-radius: 5px;
+                .file-item-grid-icon {
+                    display: inline;
+                    opacity: 1.0;
                 }
             }
         }
     }
-
+    .list-img-item {
+        width: 23px;
+        vertical-align: middle;
+    }
+    .file-item-name {
+        height: 23px;
+        line-height: 23px;
+        margin-left: 8px;
+        vertical-align:middle;
+    }
 </style>
 
 
