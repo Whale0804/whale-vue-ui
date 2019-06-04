@@ -7,7 +7,6 @@
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-
         <div class="file-list-header">
             <div class="file-list-header-btn">
                 <el-button type="primary" size="small" @click="selectAll">全选</el-button>
@@ -58,7 +57,7 @@
                 </el-table-column>
                 <el-table-column
                         label="名称"
-                        width="420"
+                        width="620"
                         prop="date"
                         sortable>
                     <template slot-scope="scope">
@@ -69,17 +68,17 @@
                     </template>
                 </el-table-column>
                 <el-table-column
-                        prop="date"
-                        label="修改日期"
-                        width="120">
-                    <template slot-scope="scope">
-                        {{ scope.row.date }}
-                    </template>
-                </el-table-column>
-                <el-table-column
                         prop="size"
                         label="大小"
                         show-overflow-tooltip>
+                </el-table-column>
+                <el-table-column
+                        prop="date"
+                        label="修改日期"
+                        width="220">
+                    <template slot-scope="scope">
+                        {{ scope.row.date }}
+                    </template>
                 </el-table-column>
             </el-table>
             <div v-else class="file-grid-content">
@@ -105,19 +104,19 @@
         data() {
             return {
                 isAll: false,
-                isTable: !true,
+                isTable: true,
                 active: true,
                 selectType: '',
                 searchTxt: '',
                 fileList:[],
                 tableData: [{
-                    name: '王小虎',
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统-v1',
                     date: '2016-05-03',
-                    size: '上海市普陀区金沙江路 1518 弄'
+                    size: '890 M'
                 },{
-                    name: '王小虎',
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统',
                     date: '2016-05-03',
-                    size: '上海市普陀区金沙江路 1518 弄'
+                    size: '12.5 G'
                 }, ],
                 multipleSelection: [],
                 breadcrumbList: [
@@ -305,7 +304,7 @@
                 }
             }
             .file-item-active {
-                background-color: #f1f5fa;
+                background-color: #DAF5FF;
                 border: 1px solid #90d8ff;
                 border-radius: 5px;
                 .file-item-grid-icon {

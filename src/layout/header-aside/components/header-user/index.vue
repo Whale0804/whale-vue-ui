@@ -1,7 +1,7 @@
 <template>
-  <el-dropdown size="small" class="d2-mr">
-    <span class="btn-text">{{info.name ? `你好 ${info.name}` : '未登录'}}</span>
-    <el-dropdown-menu slot="dropdown">
+  <el-dropdown size="small" class="d2-mr" trigger="click">
+    <span class="user-avatar" :style="{backgroundImage: 'url(https://upload.jianshu.io/users/upload_avatars/4759699/e2a45785-42a9-47b0-9f74-0f55c0fd3e23.jpeg?imageMogr2/auto-orient/strip|imageView2/1/w/96/h/96)'}"></span>
+    <el-dropdown-menu slot="dropdown" >
       <el-dropdown-item @click.native="logOff">
         <d2-icon name="power-off" class="d2-mr-5"/>
         注销
@@ -33,3 +33,18 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+  .user-avatar {
+    margin-left: 10px;
+    height: 32px;
+    width: 32px;
+    border-radius: 3px 3px 3px 3px;
+    display: inline-block;
+    vertical-align: middle;
+    overflow: hidden;
+    background-color: rgba(0,0,0,.02);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50%;
+  }
+</style>

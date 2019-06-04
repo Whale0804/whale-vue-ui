@@ -28,10 +28,7 @@
                 <div class="d2-header-right" flex-box="0">
                     <!-- 如果你只想在开发环境显示这个按钮请添加 v-if="$env === 'development'" -->
                     <d2-header-search @click="handleSearchClick"/>
-                    <d2-header-log/>
-                    <d2-header-fullscreen/>
                     <d2-header-theme/>
-                    <d2-header-size/>
                     <d2-header-user/>
                 </div>
             </div>
@@ -61,10 +58,6 @@
                     <!-- 内容 -->
                     <transition name="fade-scale">
                         <div v-if="!searchActive" class="d2-theme-container-main-layer" flex="dir:top">
-                            <!--              &lt;!&ndash; tab &ndash;&gt;-->
-                            <!--              <div class="d2-theme-container-main-header" flex-box="0">-->
-                            <!--                <d2-tabs/>-->
-                            <!--              </div>-->
                             <!-- 页面 -->
                             <div class="d2-theme-container-main-body" flex-box="1">
                                 <transition :name="transitionActive ? 'fade-transverse' : ''">
