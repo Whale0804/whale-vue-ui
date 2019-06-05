@@ -50,6 +50,9 @@
                       :data="tableData"
                       tooltip-effect="dark"
                       style="width: 100%"
+                      @row-click="handleRowClick"
+                      @row-dblclick="handleRowDbClick"
+                      :row-class-name="tableRowClassName"
                       @selection-change="handleSelectionChange">
                 <el-table-column
                         type="selection"
@@ -57,25 +60,30 @@
                 </el-table-column>
                 <el-table-column
                         label="名称"
-                        width="620"
                         prop="date"
                         sortable>
                     <template slot-scope="scope">
-                        <img src="../../assets/list-icons/folder.png" class="list-img-item" alt="">
-                        <span class="file-item-name">
-                            {{scope.row.name}}
-                        </span>
+                        <div class="list-item-name-cell">
+                            <div style="flex: 1;display: flex;flex-direction: row;">
+                                <img src="../../assets/list-icons/folder.png" class="list-img-item" alt="">
+                                <span class="file-item-name" :title="scope.row.name">{{scope.row.name}}</span>
+                            </div>
+                            <div class="list-item-action">
+
+                            </div>
+                        </div>
                     </template>
                 </el-table-column>
                 <el-table-column
                         prop="size"
                         label="大小"
+                        width="100"
                         show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column
                         prop="date"
                         label="修改日期"
-                        width="220">
+                        width="160">
                     <template slot-scope="scope">
                         {{ scope.row.date }}
                     </template>
@@ -110,10 +118,22 @@
                 searchTxt: '',
                 fileList:[],
                 tableData: [{
-                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统-v1',
-                    date: '2016-05-03',
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统-v1 实现企业级分布式云存储系统-v1',
+                    date: '2016-05-03 19:20:01',
                     size: '890 M'
                 },{
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统',
+                    date: '2016-05-03',
+                    size: '12.5 G'
+                }, {
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统',
+                    date: '2016-05-03',
+                    size: '12.5 G'
+                }, {
+                    name: 'Go实战仿百度云盘 实现企业级分布式云存储系统',
+                    date: '2016-05-03',
+                    size: '12.5 G'
+                }, {
                     name: 'Go实战仿百度云盘 实现企业级分布式云存储系统',
                     date: '2016-05-03',
                     size: '12.5 G'
@@ -140,9 +160,22 @@
                 this.isAll = !this.isAll
                 this.$refs.multipleTable.toggleAllSelection();
             },
+            handleRowClick (row, column, event) {
+                this.$refs.multipleTable.toggleRowSelection(row);
+            },
+            handleRowDbClick (row, column, event) {
+                this.$router.push("/")
+            },
+            tableRowClassName({row, rowIndex}) {
+              if (rowIndex === 1) {
+                return 'warning-row';
+              } else if (rowIndex === 3) {
+                return 'success-row';
+              }
+              return '';
+            },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
-                console.log(val)
             },
             handleContentListClick() {
                 this.isTable = true;
@@ -242,10 +275,18 @@
     .file-list-container {
         margin-top: 12px;
         width: 100%;
-
+        min-width: 980px;
         /*thead {*/
         /*    display: none;*/
         /*}*/
+
+        .el-table .warning-row {
+            background: oldlace;
+        }
+
+        .el-table .success-row {
+            background: #f0f9eb;
+        }
 
         .file-grid-content {
             width: 100%;
@@ -313,16 +354,34 @@
                 }
             }
         }
+
+        .list-item-action {
+            width: 100px;
+            height: 24px;
+            background: #66b1ff;
+        }
     }
     .list-img-item {
         width: 23px;
+        height: 23px;
         vertical-align: middle;
+        cursor: pointer;
     }
     .file-item-name {
         height: 23px;
         line-height: 23px;
         margin-left: 8px;
         vertical-align:middle;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 500px;
+        cursor: pointer;
+    }
+    .list-item-name-cell {
+        min-width: 600px;
+        display: flex;
+        flex-direction: row;
     }
 </style>
 
