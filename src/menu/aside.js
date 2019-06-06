@@ -23,6 +23,11 @@ export default [
         title: '组织资源',
         icon: 'users',
         path: '/files',
+      },
+      {
+        title: '我发布的',
+        icon: 'bookmark-o',
+        path: '/files',
       }
     ]
   }
