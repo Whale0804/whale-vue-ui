@@ -1,48 +1,56 @@
 <template>
     <d2-container class="file-list-wrapper">
-        <div>
-            <el-breadcrumb separator-class="el-icon-arrow-right" class="file-bread-wrapper">
-                <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :to="{path: item.path }" :key="index">
-                    <span>{{item.name}}</span>
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
-        <div class="file-list-header">
-            <div class="file-list-header-btn">
-                <el-button type="primary" size="small" @click="selectAll">全选</el-button>
-                <transition name="slide-fade">
-                    <el-button v-show="isAll" size="small" type="primary">删除<i
-                            class="el-icon-upload el-icon--right"></i></el-button>
-                </transition>
-                <transition name="slide-fade">
-                    <el-button v-show="isAll" size="small" type="primary">下载<i
-                            class="el-icon-folder el-icon--right"></i></el-button>
-                </transition>
-                <transition name="slide-fade">
-                    <el-button v-show="isAll" size="small" type="primary">移动<i
-                            class="el-icon-folder el-icon--right"></i></el-button>
-                </transition>
-                <transition name="slide-fade">
-                    <el-button v-show="isAll" size="small" type="primary">分享<i
-                            class="el-icon-folder el-icon--right"></i></el-button>
-                </transition>
-            </div>
-            <!--            <el-input placeholder="请输入内容" size="medium" v-model="searchTxt" class="input-with-select">-->
-            <!--                <el-select v-model="selectType" slot="prepend" placeholder="请选择">-->
-            <!--                    <el-option label="餐厅名" value="1"></el-option>-->
-            <!--                    <el-option label="订单号" value="2"></el-option>-->
-            <!--                    <el-option label="用户电话" value="3"></el-option>-->
-            <!--                </el-select>-->
-            <!--                <el-button slot="append" icon="el-icon-search"></el-button>-->
-            <!--            </el-input>-->
-            <div @click="handleContentListClick">
-                <d2-icon name="list" class="file-list-icon" :style="{color: active ?'#409EFF':''}"/>
-            </div>
-            <div @click="handleContentGridClick">
-                <d2-icon name="th" class="file-grid-icon" :style="{color: !active ?'#409EFF':''}"/>
-            </div>
+        <template slot="header">
+            <div class="file-list-header">
+                <div class="file-list-header-btn">
+                    <el-button-group>
+                        <el-button type="primary" size="small" @click="selectAll">全选</el-button>
 
-        </div>
+
+                        <transition name="slide-fade">
+                            <el-button v-show="isAll" size="small" type="primary">删除<i
+                                    class="el-icon-delete el-icon--right"></i></el-button>
+                        </transition>
+                        <transition name="slide-fade">
+                            <el-button v-show="isClickRow" size="small" type="primary">重命名<i
+                                    class="el-icon-edit el-icon--right"></i></el-button>
+                        </transition>
+                        <transition name="slide-fade">
+                            <el-button v-show="isAll" size="small" type="primary">下载<i
+                                    class="el-icon-download el-icon--right"></i></el-button>
+                        </transition>
+                        <transition name="slide-fade">
+                            <el-button v-show="isAll" size="small" type="primary">移动<i
+                                    class="el-icon-sort el-icon--right"></i></el-button>
+                        </transition>
+                        <transition name="slide-fade">
+                            <el-button v-show="isAll" size="small" type="primary">分享<i
+                                    class="el-icon-share el-icon--right"></i></el-button>
+                        </transition>
+                        <el-button type="primary" size="small" @click="selectAll">新建文件<i
+                                class="el-icon-folder-add el-icon--right"></i></el-button>
+                    </el-button-group>
+                </div>
+                <div @click="handleContentListClick">
+                    <d2-icon name="list" class="file-list-icon" :style="{color: active ?'#409EFF':''}"/>
+                </div>
+                <div @click="handleContentGridClick">
+                    <d2-icon name="th" class="file-grid-icon" :style="{color: !active ?'#409EFF':''}"/>
+                </div>
+            </div>
+            <div class="file-bread">
+                <el-breadcrumb separator-class="el-icon-arrow-right" class="file-bread-wrapper">
+                    <span class="file-header-back">返回上一级</span> <span class="file-header-back-line">|</span>
+                    <el-breadcrumb-item v-for="(item,index) in breadcrumbList" :to="{path: item.path }" :key="index">
+                        <span>{{item.name}}</span>
+                    </el-breadcrumb-item>
+                </el-breadcrumb>
+                <div class="file-bread-desc">
+                    已全部加载，共2个
+                </div>
+            </div>
+        </template>
+
 
         <div class="file-list-container">
             <el-table v-if="isTable"
@@ -69,7 +77,9 @@
                                 <span class="file-item-name" :title="scope.row.name">{{scope.row.name}}</span>
                             </div>
                             <div class="list-item-action">
-
+                                <i class="el-icon-share action-icon-item" @click.stop="handleShareClick(scope.row)"/>
+                                <i class="el-icon-download action-icon-item" @click.stop="handleDownloadClick(scope.row)"/>
+                                <i class="el-icon-more action-icon-item" @click.stop="handleMoreClick(scope.row)"/>
                             </div>
                         </div>
                     </template>
@@ -112,11 +122,13 @@
         data() {
             return {
                 isAll: false,
+                isClickRow:false,
                 isTable: true,
                 active: true,
                 selectType: '',
                 searchTxt: '',
                 fileList:[],
+                BS: null,
                 tableData: [{
                     name: 'Go实战仿百度云盘 实现企业级分布式云存储系统-v1 实现企业级分布式云存储系统-v1',
                     date: '2016-05-03 19:20:01',
@@ -142,12 +154,11 @@
                 breadcrumbList: [
                     {
                         path: '/',
-                        name: '首页'
-                    },
-                    {
-                        path: '/upload',
                         name: '全部文件',
-                    }
+                    },{
+                        path: '/upload1',
+                        name: '全部文件',
+                    },
                 ],
             }
         },
@@ -162,6 +173,8 @@
             },
             handleRowClick (row, column, event) {
                 this.$refs.multipleTable.toggleRowSelection(row);
+                this.isAll = !this.isAll
+                this.isClickRow = !this.isClickRow
             },
             handleRowDbClick (row, column, event) {
                 this.$router.push("/")
@@ -212,18 +225,46 @@
               this.fileList[index].select = select === true ? false : true;
               console.log(this.fileList[index])
             },
-        }
+            handleShareClick (row) {
+                console.log(row)
+            },
+            handleDownloadClick (row) {
+                console.log(row)
+            },
+            handleMoreClick (row) {
+                console.log(row)
+            },
+        },
     }
 </script>
 <style lang="scss">
-    .file-bread-wrapper {
-        display: flex;
-        flex-direction: row;
-    }
-
     .file-list-wrapper {
         display: flex;
         flex-direction: column;
+    }
+
+    .file-bread {
+        display: flex;
+        flex-direction: row;
+        margin-top: 20px;
+        .file-bread-wrapper {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+        }
+        .file-header-back {
+            color: #66b1ff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .file-header-back-line {
+            margin: 0 5px;
+            color: #CCC7D1;
+        }
+        .file-bread-desc {
+            font-size: 12px;
+        }
     }
 
     .file-list-header {
@@ -231,9 +272,9 @@
         flex-direction: row;
         align-items: center;
         background: #EDF1F6;
-        margin-top: 12px;
         padding: 8px;
         border-radius: 4px;
+        min-width: 980px;
 
         .file-list-header-btn {
             flex: 1;
@@ -273,12 +314,8 @@
     }
 
     .file-list-container {
-        margin-top: 12px;
         width: 100%;
         min-width: 980px;
-        /*thead {*/
-        /*    display: none;*/
-        /*}*/
 
         .el-table .warning-row {
             background: oldlace;
@@ -357,8 +394,20 @@
 
         .list-item-action {
             width: 100px;
-            height: 24px;
-            background: #66b1ff;
+            height: 23px;
+            font-size: 18px;
+            font-weight: 500;
+            display: none;
+            .action-icon-item {
+                padding: 0 7px;
+                color: #66b1ff;
+                cursor: pointer;
+            }
+        }
+        .el-table__row:hover {
+            .list-item-action {
+                display: inline-block;
+            }
         }
     }
     .list-img-item {
