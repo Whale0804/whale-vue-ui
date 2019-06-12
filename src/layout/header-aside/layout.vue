@@ -78,6 +78,7 @@
                             class="upload-demo"
                             action="/v1/file/upload"
                             :on-progress="handleProgres"
+                            :on-success="handleFileSuccess"
                             :show-file-list="false"
                             multiple
                             :limit="300">
@@ -106,6 +107,32 @@
                         <i class="el-icon-error" @click="handleCloseFileListWrapper"/>
                     </el-header>
                     <el-main>
+                        <div v-for="(item,index) in files" :key="index">
+                            <span><i class="bg"></i>{{item.name}}</span>
+                            <div v-if="item.progressFlag">
+                                <el-progress :percentage="item.progressPercent"></el-progress>
+                            </div>
+                            <span v-else-if="item.successFlag">上传成功!</span>
+                            <span v-else>上传失败!</span>
+                            <span>{{item.size}}</span>
+                            <div v-if="item.progressFlag">
+                                <span>[删除]</span>
+                                <span>[下载]</span>
+                            </div>
+                            <div v-else>
+
+                            </div>
+                        </div>
+                        <div id="filePicker">选择文件</div>
+                        <vue-upload
+                                ref="uploader"
+                                uploadButton="#filePicker"
+                                multiple
+                                @fileChange="fileChange"
+                                @progress="onProgress"
+                                @success="onSuccess"
+                                url="/v1/file/upload "
+                        ></vue-upload>
 
                     </el-main>
                 </el-container>
@@ -115,100 +142,181 @@
 </template>
 
 <script>
-  import d2MenuSide from './components/menu-side'
-  import d2MenuHeader from './components/menu-header'
-  import d2Tabs from './components/tabs'
-  import d2HeaderFullscreen from './components/header-fullscreen'
-  import d2HeaderSearch from './components/header-search'
-  import d2HeaderSize from './components/header-size'
-  import d2HeaderTheme from './components/header-theme'
-  import d2HeaderUser from './components/header-user'
-  import d2HeaderLog from './components/header-log'
-  import { mapState, mapGetters, mapActions } from 'vuex'
-  import mixinSearch from './mixins/search'
-  import FileUpload from 'vue-upload-component'
+    import d2MenuSide from './components/menu-side'
+    import d2MenuHeader from './components/menu-header'
+    import d2Tabs from './components/tabs'
+    import d2HeaderFullscreen from './components/header-fullscreen'
+    import d2HeaderSearch from './components/header-search'
+    import d2HeaderSize from './components/header-size'
+    import d2HeaderTheme from './components/header-theme'
+    import d2HeaderUser from './components/header-user'
+    import d2HeaderLog from './components/header-log'
+    import {mapState, mapGetters, mapActions} from 'vuex'
+    import mixinSearch from './mixins/search'
+    import vueUpload from '../../components/upload/upload'
+    export default {
+        name: 'd2-layout-header-aside',
+        mixins: [
+            mixinSearch
+        ],
+        components: {
+            d2MenuSide,
+            d2MenuHeader,
+            d2Tabs,
+            d2HeaderFullscreen,
+            d2HeaderSearch,
+            d2HeaderSize,
+            d2HeaderTheme,
+            d2HeaderUser,
+            d2HeaderLog,
+            vueUpload,
+        },
+        data() {
+            return {
+                // [侧边栏宽度] 正常状态
+                asideWidth: '200px',
+                // [侧边栏宽度] 折叠状态
+                asideWidthCollapse: '65px',
+                actionShow: false,
+                isUploadFiles: true,
+                files: [],
+                fileList: [],
+            }
+        },
+        mounted() {
+            // let body = document.querySelector('body')
+            // body.addEventListener('click',(e)=>{
+            //     if(e.target.className == 'upload-wrapper'){
+            //         this.actionShow = true
+            //     }else {
+            //         this.actionShow = false
+            //     }
+            // })
+        },
+        computed: {
+            ...mapState('d2admin', {
+                keepAlive: state => state.page.keepAlive,
+                grayActive: state => state.gray.active,
+                transitionActive: state => state.transition.active,
+                asideCollapse: state => state.menu.asideCollapse
+            }),
+            ...mapGetters('d2admin', {
+                themeActiveSetting: 'theme/activeSetting'
+            }),
+            /**
+             * @description 最外层容器的背景图片样式
+             */
+            styleLayoutMainGroup() {
+                return {
+                    ...this.themeActiveSetting.backgroundImage ? {
+                        backgroundImage: `url('${this.$baseUrl}${this.themeActiveSetting.backgroundImage}')`
+                    } : {}
+                }
+            },
+            uploader() {
+                return this.$refs.uploader;
+            }
+        },
+        methods: {
+            ...mapActions('d2admin/menu', [
+                'asideCollapseToggle'
+            ]),
+            fileChange(file) {
+                if (!file.size) return;
+                this.fileList.push(file);
+                console.log(file);
+            },
+            onProgress(file, percent) {
+                $(`.file-${file.id} .progress`).css('width', percent * 100 + '%');
+                $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(2) + '%');
+            },
+            onSuccess (file, response) {
+                console.log('上传成功', response);
+                if (response.needMerge) {
+                    api.mergeUpload({
+                        tempName: response.tempName,
+                        fileName: file.name
+                    }).then(res => {
+                        let $fileStatus = $(`.file-${file.id} .file-status`);
+                        console.log(res);
+                        if (res.status === 0) {
+                            $fileStatus.html('上传成功，转码中');
+                        } else if (res.status === 1) {
+                            $fileStatus.html('上传失败');
+                        } else if (res.status === 2) {
+                            $fileStatus.html('上传成功');
+                        }
+                    });
+                }
+            },
+            resume(file) {
+                this.uploader.upload(file);
+            },
+            stop(file) {
+                this.uploader.stop(file);
+            },
+            remove(file) {
+                // 取消并中断文件上传
+                this.uploader.cancelFile(file);
+                // 在队列中移除文件
+                this.uploader.removeFile(file, true);
+                // 在ui上移除
+                let index = this.fileList.findIndex(ele => ele.id === file.id);
+                this.fileList.splice(index, 1);
+            },
+            fileSize(size) {
+                return WebUploader.Base.formatSize(size);
+            },
+            fileCategory(ext) {
+                let type = '';
+                const typeMap = {
+                    image: ['gif', 'jpg', 'jpeg', 'png', 'bmp', 'webp'],
+                    video: ['mp4', 'm3u8', 'rmvb', 'avi', 'swf', '3gp', 'mkv', 'flv'],
+                    text: ['doc', 'txt', 'docx', 'pages', 'epub', 'pdf', 'numbers', 'csv', 'xls', 'xlsx', 'keynote', 'ppt', 'pptx']
+                };
+                Object.keys(typeMap).forEach((_type) => {
+                    const extensions = typeMap[_type];
+                    if (extensions.indexOf(ext) > -1) {
+                        type = _type
+                    }
+                });
+                return type
+            },
+            handleProgres(event, file, fileList) {
+                this.files = fileList
+                this.files.forEach(item => {
+                    item.progressFlag = true
+                    console.log(item)
+                    item.progressPercent = item.percentage;
+                    this.files = Object.assign({}, this.files);
+                })
 
-  export default {
-    name: 'd2-layout-header-aside',
-    mixins: [
-      mixinSearch
-    ],
-    components: {
-      d2MenuSide,
-      d2MenuHeader,
-      d2Tabs,
-      d2HeaderFullscreen,
-      d2HeaderSearch,
-      d2HeaderSize,
-      d2HeaderTheme,
-      d2HeaderUser,
-      d2HeaderLog,
-      FileUpload
-    },
-    data () {
-      return {
-        // [侧边栏宽度] 正常状态
-        asideWidth: '200px',
-        // [侧边栏宽度] 折叠状态
-        asideWidthCollapse: '65px',
-        actionShow: false,
-        isUploadFiles: true
-      }
-    },
-    mounted () {
-      // let body = document.querySelector('body')
-      // body.addEventListener('click',(e)=>{
-      //     if(e.target.className == 'upload-wrapper'){
-      //         this.actionShow = true
-      //     }else {
-      //         this.actionShow = false
-      //     }
-      // })
-    },
-    computed: {
-      ...mapState('d2admin', {
-        keepAlive: state => state.page.keepAlive,
-        grayActive: state => state.gray.active,
-        transitionActive: state => state.transition.active,
-        asideCollapse: state => state.menu.asideCollapse
-      }),
-      ...mapGetters('d2admin', {
-        themeActiveSetting: 'theme/activeSetting'
-      }),
-      /**
-       * @description 最外层容器的背景图片样式
-       */
-      styleLayoutMainGroup () {
-        return {
-          ...this.themeActiveSetting.backgroundImage ? {
-            backgroundImage: `url('${this.$baseUrl}${this.themeActiveSetting.backgroundImage}')`
-          } : {}
+            },
+            handleFileSuccess(res, file, fileList) {
+                this.fileArr = fileList
+                this.fileArr.forEach((item, index) => {
+                    item.progressFlag = false
+                    if (item.status == 'success') {
+                        item.successFlag = true
+                    } else {
+                        item.successFlag = false
+                    }
+                })
+            },
+            handleCloseFileListWrapper() {
+                this.isUploadFiles = false;
+            },
+            /**
+             * 接收点击切换侧边栏的按钮
+             */
+            handleToggleAside() {
+                this.asideCollapseToggle()
+            },
+            handleToggleBtnClick() {
+                this.actionShow = !this.actionShow
+            }
         }
-      }
-    },
-    methods: {
-      ...mapActions('d2admin/menu', [
-        'asideCollapseToggle'
-      ]),
-      handleProgres (event, file, fileList) {
-        console.log(event)
-        // console.log(file)
-        // console.log(fileList)
-      },
-      handleCloseFileListWrapper () {
-        this.isUploadFiles = false;
-      },
-      /**
-       * 接收点击切换侧边栏的按钮
-       */
-      handleToggleAside () {
-        this.asideCollapseToggle()
-      },
-      handleToggleBtnClick () {
-        this.actionShow = !this.actionShow
-      }
     }
-  }
 </script>
 
 <style lang="scss">
@@ -223,15 +331,17 @@
         bottom: 50px;
         right: 130px;
         border-radius: 5px;
+
         .upload-file-list-header {
             background: #66b1ff;
-            height: 40px!important;
+            height: 40px !important;
             line-height: 40px;
             color: white;
+
             i {
                 float: right;
                 line-height: 40px;
-                cursor:pointer;
+                cursor: pointer;
             }
         }
     }
