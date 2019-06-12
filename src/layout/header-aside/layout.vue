@@ -74,7 +74,15 @@
         <div class="upload-wrapper">
             <transition name="fade">
                 <div class="upload-btn-item" v-if="actionShow">
-                    <el-button size="medium" type="primary" icon="fa fa-cloud-upload" circle></el-button>
+                    <el-upload
+                            class="upload-demo"
+                            action="/v1/file/upload"
+                            :on-progress="handleProgres"
+                            :show-file-list="false"
+                            multiple
+                            :limit="300">
+                        <el-button size="medium" type="primary" icon="fa fa-cloud-upload" circle></el-button>
+                    </el-upload>
                 </div>
             </transition>
             <transition name="fade" v-if="actionShow">
@@ -84,102 +92,149 @@
             </transition>
             <transition name="fade">
                 <div class="upload-btn-item">
-                    <el-button size="medium" type="warning" icon="el-icon-plus" circle @click="handleToggleBtnClick"></el-button>
+                    <el-button size="medium" type="warning" icon="el-icon-plus" circle
+                               @click="handleToggleBtnClick"></el-button>
                 </div>
             </transition>
         </div>
+        <!--    https://www.jianshu.com/p/989af714553d    -->
+        <transition name="fade" v-if="isUploadFiles">
+            <div class="upload-file-list-wrapper">
+                <el-container>
+                    <el-header class="upload-file-list-header">
+                        上传列表
+                        <i class="el-icon-error" @click="handleCloseFileListWrapper"/>
+                    </el-header>
+                    <el-main>
+
+                    </el-main>
+                </el-container>
+            </div>
+        </transition>
     </div>
 </template>
 
 <script>
-    import d2MenuSide from './components/menu-side'
-    import d2MenuHeader from './components/menu-header'
-    import d2Tabs from './components/tabs'
-    import d2HeaderFullscreen from './components/header-fullscreen'
-    import d2HeaderSearch from './components/header-search'
-    import d2HeaderSize from './components/header-size'
-    import d2HeaderTheme from './components/header-theme'
-    import d2HeaderUser from './components/header-user'
-    import d2HeaderLog from './components/header-log'
-    import {mapState, mapGetters, mapActions} from 'vuex'
-    import mixinSearch from './mixins/search'
+  import d2MenuSide from './components/menu-side'
+  import d2MenuHeader from './components/menu-header'
+  import d2Tabs from './components/tabs'
+  import d2HeaderFullscreen from './components/header-fullscreen'
+  import d2HeaderSearch from './components/header-search'
+  import d2HeaderSize from './components/header-size'
+  import d2HeaderTheme from './components/header-theme'
+  import d2HeaderUser from './components/header-user'
+  import d2HeaderLog from './components/header-log'
+  import { mapState, mapGetters, mapActions } from 'vuex'
+  import mixinSearch from './mixins/search'
+  import FileUpload from 'vue-upload-component'
 
-    export default {
-        name: 'd2-layout-header-aside',
-        mixins: [
-            mixinSearch
-        ],
-        components: {
-            d2MenuSide,
-            d2MenuHeader,
-            d2Tabs,
-            d2HeaderFullscreen,
-            d2HeaderSearch,
-            d2HeaderSize,
-            d2HeaderTheme,
-            d2HeaderUser,
-            d2HeaderLog,
-        },
-        data() {
-            return {
-                // [侧边栏宽度] 正常状态
-                asideWidth: '200px',
-                // [侧边栏宽度] 折叠状态
-                asideWidthCollapse: '65px',
-                actionShow: false
-            }
-        },
-        mounted () {
-            // let body = document.querySelector('body')
-            // body.addEventListener('click',(e)=>{
-            //     if(e.target.className == 'upload-wrapper'){
-            //         this.actionShow = true
-            //     }else {
-            //         this.actionShow = false
-            //     }
-            // })
-        },
-        computed: {
-            ...mapState('d2admin', {
-                keepAlive: state => state.page.keepAlive,
-                grayActive: state => state.gray.active,
-                transitionActive: state => state.transition.active,
-                asideCollapse: state => state.menu.asideCollapse
-            }),
-            ...mapGetters('d2admin', {
-                themeActiveSetting: 'theme/activeSetting'
-            }),
-            /**
-             * @description 最外层容器的背景图片样式
-             */
-            styleLayoutMainGroup() {
-                return {
-                    ...this.themeActiveSetting.backgroundImage ? {
-                        backgroundImage: `url('${this.$baseUrl}${this.themeActiveSetting.backgroundImage}')`
-                    } : {}
-                }
-            }
-        },
-        methods: {
-            ...mapActions('d2admin/menu', [
-                'asideCollapseToggle'
-            ]),
-            /**
-             * 接收点击切换侧边栏的按钮
-             */
-            handleToggleAside() {
-                this.asideCollapseToggle()
-            },
-            handleToggleBtnClick () {
-                this.actionShow = !this.actionShow;
-            }
+  export default {
+    name: 'd2-layout-header-aside',
+    mixins: [
+      mixinSearch
+    ],
+    components: {
+      d2MenuSide,
+      d2MenuHeader,
+      d2Tabs,
+      d2HeaderFullscreen,
+      d2HeaderSearch,
+      d2HeaderSize,
+      d2HeaderTheme,
+      d2HeaderUser,
+      d2HeaderLog,
+      FileUpload
+    },
+    data () {
+      return {
+        // [侧边栏宽度] 正常状态
+        asideWidth: '200px',
+        // [侧边栏宽度] 折叠状态
+        asideWidthCollapse: '65px',
+        actionShow: false,
+        isUploadFiles: true
+      }
+    },
+    mounted () {
+      // let body = document.querySelector('body')
+      // body.addEventListener('click',(e)=>{
+      //     if(e.target.className == 'upload-wrapper'){
+      //         this.actionShow = true
+      //     }else {
+      //         this.actionShow = false
+      //     }
+      // })
+    },
+    computed: {
+      ...mapState('d2admin', {
+        keepAlive: state => state.page.keepAlive,
+        grayActive: state => state.gray.active,
+        transitionActive: state => state.transition.active,
+        asideCollapse: state => state.menu.asideCollapse
+      }),
+      ...mapGetters('d2admin', {
+        themeActiveSetting: 'theme/activeSetting'
+      }),
+      /**
+       * @description 最外层容器的背景图片样式
+       */
+      styleLayoutMainGroup () {
+        return {
+          ...this.themeActiveSetting.backgroundImage ? {
+            backgroundImage: `url('${this.$baseUrl}${this.themeActiveSetting.backgroundImage}')`
+          } : {}
         }
+      }
+    },
+    methods: {
+      ...mapActions('d2admin/menu', [
+        'asideCollapseToggle'
+      ]),
+      handleProgres (event, file, fileList) {
+        console.log(event)
+        // console.log(file)
+        // console.log(fileList)
+      },
+      handleCloseFileListWrapper () {
+        this.isUploadFiles = false;
+      },
+      /**
+       * 接收点击切换侧边栏的按钮
+       */
+      handleToggleAside () {
+        this.asideCollapseToggle()
+      },
+      handleToggleBtnClick () {
+        this.actionShow = !this.actionShow
+      }
     }
+  }
 </script>
 
 <style lang="scss">
     // 注册主题
     @import '~@/assets/style/theme/register.scss';
+
+    .upload-file-list-wrapper {
+        background: #FFF;
+        width: 400px;
+        height: 300px;
+        position: fixed;
+        bottom: 50px;
+        right: 130px;
+        border-radius: 5px;
+        .upload-file-list-header {
+            background: #66b1ff;
+            height: 40px!important;
+            line-height: 40px;
+            color: white;
+            i {
+                float: right;
+                line-height: 40px;
+                cursor:pointer;
+            }
+        }
+    }
 
     .upload-wrapper {
         display: flex;
@@ -187,6 +242,7 @@
         position: fixed;
         bottom: 50px;
         right: 50px;
+
         .el-button {
             width: 48px;
             height: 48px;
@@ -200,7 +256,9 @@
         .fade-enter-active, .fade-leave-active {
             transition: opacity .5s;
         }
-        .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+
+        .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
+        {
             opacity: 0;
         }
     }
