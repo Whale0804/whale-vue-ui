@@ -81,6 +81,7 @@
                             ref="uploader"
                             uploadButton="#filePicker"
                             multiple
+
                             @fileChange="fileChange"
                             @progress="onProgress"
                             @success="onSuccess"
@@ -106,27 +107,30 @@
                 <el-container>
                     <el-header class="upload-file-list-header">
                         上传列表
-                        <i class="el-icon-error" @click="handleCloseFileListWrapper"/>
+                        <el-tooltip class="item" effect="dark" content="关闭" placement="top">
+                            <i class="el-icon-error" @click="handleCloseFileListWrapper"/>
+                        </el-tooltip>
+                        <el-tooltip class="item" effect="dark" content="全部上传" placement="top">
+                            <i class="fa fa-play-circle" @click="handlePlayAllFile"/>
+                        </el-tooltip>
+                        <el-tooltip class="item" effect="dark" content="全部暂停" placement="top">
+                            <i class="fa fa-stop-circle" @click="handleStopAllFile"/>
+                        </el-tooltip>
                     </el-header>
                     <el-main>
-                        <div v-for="(item,index) in files" :key="index">
-                            <span><i class="bg"></i>{{item.name}}</span>
-                            <div v-if="item.progressFlag">
-                                <el-progress :percentage="item.progressPercent"></el-progress>
+                        <div class="file-list">
+                            <div class="file-item" :class="`file-${file.id}`" v-for="file in fileList">
+                                <div class="file-type" :icon="fileCategory(file.ext)"></div>
+                                <div class="file-name">{{file.name}}</div>
+                                <div class="file-size">{{fileSize(file.size)}}</div>
+                                <div class="file-status">上传成功</div>
+                                <div class="file-operate">
+                                    <a title="移除" @click="remove(file)"><i class="fa fa-trash"></i></a>
+                                </div>
+                                <div class="progress"></div>
                             </div>
-                            <span v-else-if="item.successFlag">上传成功!</span>
-                            <span v-else>上传失败!</span>
-                            <span>{{item.size}}</span>
-                            <div v-if="item.progressFlag">
-                                <span>[删除]</span>
-                                <span>[下载]</span>
-                            </div>
-                            <div v-else>
-
-                            </div>
+                            <div class="no-file" v-if="!fileList.length"><i class="iconfont icon-empty-file"></i> 暂无待上传文件</div>
                         </div>
-
-
                     </el-main>
                 </el-container>
             </div>
@@ -217,36 +221,31 @@
             fileChange(file) {
                 if (!file.size) return;
                 this.fileList.push(file);
-                console.log(file);
+                this.isUploadFiles = true;
             },
             onProgress(file, percent) {
                 $(`.file-${file.id} .progress`).css('width', percent * 100 + '%');
-                $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(2) + '%');
+                $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(0) + '%');
             },
             onSuccess (file, response) {
-                console.log('上传成功', response);
-                if (response.needMerge) {
-                    api.mergeUpload({
-                        tempName: response.tempName,
-                        fileName: file.name
-                    }).then(res => {
-                        let $fileStatus = $(`.file-${file.id} .file-status`);
-                        console.log(res);
-                        if (res.status === 0) {
-                            $fileStatus.html('上传成功，转码中');
-                        } else if (res.status === 1) {
-                            $fileStatus.html('上传失败');
-                        } else if (res.status === 2) {
-                            $fileStatus.html('上传成功');
-                        }
-                    });
+                if (response.code) {
+                    let $fileStatus = $(`.file-${file.id} .file-status`);
+                    if (response.code === 0) {
+                        $fileStatus.html('上传成功，转码中');
+                    } else if (response.code === 401) {
+                        this.uploader.cancelFile(file);
+                        $fileStatus.html('上传失败');
+                    } else if (response.code === 2) {
+                        $fileStatus.html('上传成功');
+                    }
                 }
             },
-            resume(file) {
-                this.uploader.upload(file);
+            handlePlayAllFile() {
+                this.uploader.upload();
             },
-            stop(file) {
-                this.uploader.stop(file);
+            handleStopAllFile() {
+                this.uploader.stop();
+
             },
             remove(file) {
                 // 取消并中断文件上传
@@ -275,29 +274,24 @@
                 });
                 return type
             },
-            handleProgres(event, file, fileList) {
-                this.files = fileList
-                this.files.forEach(item => {
-                    item.progressFlag = true
-                    console.log(item)
-                    item.progressPercent = item.percentage;
-                    this.files = Object.assign({}, this.files);
-                })
-
-            },
-            handleFileSuccess(res, file, fileList) {
-                this.fileArr = fileList
-                this.fileArr.forEach((item, index) => {
-                    item.progressFlag = false
-                    if (item.status == 'success') {
-                        item.successFlag = true
-                    } else {
-                        item.successFlag = false
-                    }
-                })
-            },
             handleCloseFileListWrapper() {
-                this.isUploadFiles = false;
+                let stuts = this.uploader.getStats();
+                if(stuts.progressNum){
+                  this.$confirm('关闭文件列表将在后台继续上传', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                  }).then(() => {
+                    this.isUploadFiles = false;
+                  }).catch(() => {
+                    this.$message({
+                      type: 'info',
+                      message: '已取消删除'
+                    });
+                  });
+                }else {
+                  this.isUploadFiles = false;
+                }
             },
             /**
              * 接收点击切换侧边栏的按钮
@@ -315,15 +309,16 @@
 <style lang="scss">
     // 注册主题
     @import '~@/assets/style/theme/register.scss';
-
+    $h-row: 50px;
     .upload-file-list-wrapper {
         background: #FFF;
-        width: 400px;
-        height: 300px;
+        width: 840px;
+        height: 440px;
         position: fixed;
         bottom: 50px;
         right: 130px;
         border-radius: 5px;
+        z-index: 999;
 
         .upload-file-list-header {
             background: #66b1ff;
@@ -335,7 +330,93 @@
                 float: right;
                 line-height: 40px;
                 cursor: pointer;
+                padding: 0 5px;
             }
+        }
+        > h2 {
+            height: 40px;
+            line-height: 40px;
+            padding: 0 10px;
+            border-radius: 4px 4px 0 0;
+            border-bottom: 1px solid #ccc;
+            background-color: #fff;
+        }
+        .file-list {
+            position: relative;
+            height: 360px;
+            overflow-y: auto;
+        }
+        .file-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center; /*垂直居中*/
+            position: relative;
+            height: $h-row;
+            line-height: $h-row;
+            padding: 0 10px;
+            border-bottom: 1px solid #ccc;
+            background-color: #fff;
+            z-index: 1;
+            > li {
+                display: inline-block;
+            }
+        }
+        .file-type {
+            width: 24px;
+            height: 24px;
+            justify-content: center;
+        }
+        .file-name {
+            width: 462px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+        .file-size {
+            width: 120px;
+        }
+        .file-status {
+            width: 120px;
+        }
+        .file-operate {
+            float: right;
+            width: 40px;
+            > a {
+                padding: 10px 10px;
+                cursor: pointer;
+                color: #666;
+                &:hover {
+                    color: #409EFF;
+                }
+            }
+        }
+        .file-type[icon=text] {
+            background: url(../../assets/list-icons/file_doc.png);
+        }
+        .file-type[icon=video] {
+            background: url(../../assets/list-icons/file_video.png) no-repeat;
+            background-size: cover;
+        }
+        .file-type[icon=image] {
+            background: url(../../assets/list-icons/file_pic.png) no-repeat;
+            background-size: cover;
+        }
+        .progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: $h-row - 1;
+            width: 0;
+            background-color: #E2EDFE;
+            z-index: -1;
+        }
+        .no-file {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
         }
     }
 

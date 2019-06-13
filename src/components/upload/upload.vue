@@ -60,6 +60,7 @@
         },
         methods: {
             initWebUpload() {
+                let that = this;
                 this.uploader = WebUploader.create({
                     auto: true, // 选完文件后，是否自动上传
                     swf: '/webuploader-0.1.5/Uploader.swf',  // swf文件路径
@@ -70,13 +71,13 @@
                         label: '',
                     },
                     accept: this.getAccept(this.accept),  // 允许选择文件格式。
-                    threads: 3,
+                    threads: 5,
                     fileNumLimit: this.fileNumLimit, // 限制上传个数
                     //fileSingleSizeLimit: this.fileSingleSizeLimit, // 限制单个上传图片的大小
                     formData: this.formData,  // 上传所需参数
                     chunked: true,          //分片上传
                     chunkSize: 2048000,    //分片大小
-                    duplicate: true,  // 重复上传
+                    duplicate: false,  // 重复上传
                 });
                 // 当有文件被添加进队列的时候，添加到页面预览
                 this.uploader.on('fileQueued', (file) => {
@@ -97,6 +98,11 @@
                     console.error(reason);
                     this.$emit('uploadError', file, reason);
                 });
+                this.uploader.on('uploadBeforeSend', (object ,data, headers) => {
+                $.extend(headers, {
+                    "Authorization": 'Bearer '+that.$utils.cookies.get('token')
+                  });
+                });
                 this.uploader.on('error', (type) => {
                     let errorMessage = '';
                     if (type === 'F_EXCEED_SIZE') {
@@ -113,11 +119,11 @@
                     this.$emit('complete', file, response);
                 });
             },
-            upload(file) {
-                this.uploader.upload(file);
+            upload() {
+                this.uploader.upload();
             },
-            stop(file) {
-                this.uploader.stop(file);
+            stop() {
+              this.uploader.stop(true);
             },
             // 取消并中断文件上传
             cancelFile(file) {
@@ -126,6 +132,9 @@
             // 在队列中移除文件
             removeFile(file, bool) {
                 this.uploader.removeFile(file, bool);
+            },
+            getStats() {
+                return this.uploader.getStats();
             },
             getAccept(accept) {
                 switch (accept) {

@@ -13,6 +13,8 @@ import bus from './libs/bus';
 Vue.prototype.$bus = bus
 import tool from './libs/tool';
 Vue.prototype.$tool = tool
+import utils from './libs/util';
+Vue.prototype.$utils = utils
 // 菜单和路由设置
 import router from './router'
 import menuHeader from '@/menu/header'
