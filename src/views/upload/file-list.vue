@@ -5,8 +5,6 @@
                 <div class="file-list-header-btn">
                     <el-button-group>
                         <el-button type="primary" size="small" @click="selectAll">全选</el-button>
-
-
                         <transition name="slide-fade">
                             <el-button v-show="isAll" size="small" type="primary">删除<i
                                     class="el-icon-delete el-icon--right"></i></el-button>
@@ -238,11 +236,17 @@
     }
 </script>
 <style lang="scss">
+    .d2-layout-header-aside-group .d2-layout-header-aside-content .d2-theme-container .d2-theme-container-main .d2-theme-container-main-body .container-component .d2-container-full .d2-container-full__header {
+        padding: 20px 20px;
+    }
+    .theme-d2 .d2-theme-container .d2-theme-container-main .d2-theme-container-main-body .container-component .d2-container-full .d2-container-full__header {
+        border-bottom: 1px solid #EDEEF3;
+        background: #FFF;
+    }
     .file-list-wrapper {
         display: flex;
         flex-direction: column;
     }
-
     .file-bread {
         display: flex;
         flex-direction: row;
@@ -271,9 +275,6 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        background: #EDF1F6;
-        padding: 8px;
-        border-radius: 4px;
         min-width: 980px;
 
         .file-list-header-btn {

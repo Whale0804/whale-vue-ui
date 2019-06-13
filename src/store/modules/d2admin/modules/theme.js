@@ -27,7 +27,7 @@ export default {
     set ({ state, commit, dispatch }, themeName) {
       return new Promise(async resolve => {
         // 检查这个主题在主题列表里是否存在
-        state.activeName = state.list.find(e => e.name === themeName) ? themeName : state.list[0].name
+        state.activeName = state.list.find(e => e.name === themeName) ? themeName : state.list[3].name
         // 将 vuex 中的主题应用到 dom
         commit('dom')
         // 持久化
@@ -58,7 +58,7 @@ export default {
         if (state.list.find(e => e.name === activeName)) {
           state.activeName = activeName
         } else {
-          state.activeName = state.list[0].name
+          state.activeName = state.list[3].name
           // 持久化
           await dispatch('d2admin/db/set', {
             dbName: 'sys',

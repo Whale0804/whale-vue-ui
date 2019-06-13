@@ -20,9 +20,9 @@
                          :src="`${$baseUrl}image/theme/${themeActiveSetting.name}/logo/icon-only.png`">
                     <img v-else :src="`${$baseUrl}image/theme/${themeActiveSetting.name}/logo/all.png`">
                 </div>
-                <!--        <div class="toggle-aside-btn" @click="handleToggleAside" flex-box="0">-->
-                <!--          <d2-icon name="bars"/>-->
-                <!--        </div>-->
+                        <div class="toggle-aside-btn" @click="handleToggleAside" flex-box="0">
+                          <d2-icon name="bars"/>
+                        </div>
                 <d2-menu-header flex-box="1"/>
                 <!-- 顶栏右侧 -->
                 <div class="d2-header-right" flex-box="0">
@@ -40,9 +40,9 @@
                         ref="aside"
                         class="d2-theme-container-aside"
                         :style="{
-            width: asideCollapse ? asideWidthCollapse : asideWidth,
-            opacity: this.searchActive ? 0.5 : 1
-          }">
+                        width: asideCollapse ? asideWidthCollapse : asideWidth,
+                        opacity: this.searchActive ? 0.5 : 1,
+                      }">
                     <d2-menu-side/>
                 </div>
                 <!-- 主体 -->
@@ -74,16 +74,18 @@
         <div class="upload-wrapper">
             <transition name="fade">
                 <div class="upload-btn-item" v-if="actionShow">
-                    <el-upload
-                            class="upload-demo"
-                            action="/v1/file/upload"
-                            :on-progress="handleProgres"
-                            :on-success="handleFileSuccess"
-                            :show-file-list="false"
-                            multiple
-                            :limit="300">
+                    <div id="filePicker">
                         <el-button size="medium" type="primary" icon="fa fa-cloud-upload" circle></el-button>
-                    </el-upload>
+                    </div>
+                    <vue-upload
+                            ref="uploader"
+                            uploadButton="#filePicker"
+                            multiple
+                            @fileChange="fileChange"
+                            @progress="onProgress"
+                            @success="onSuccess"
+                            url="/v1/file/upload ">
+                    </vue-upload>
                 </div>
             </transition>
             <transition name="fade" v-if="actionShow">
@@ -123,16 +125,7 @@
 
                             </div>
                         </div>
-                        <div id="filePicker">选择文件</div>
-                        <vue-upload
-                                ref="uploader"
-                                uploadButton="#filePicker"
-                                multiple
-                                @fileChange="fileChange"
-                                @progress="onProgress"
-                                @success="onSuccess"
-                                url="/v1/file/upload "
-                        ></vue-upload>
+
 
                     </el-main>
                 </el-container>

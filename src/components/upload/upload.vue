@@ -170,15 +170,15 @@
         position: relative;
         display: inline-block;
         cursor: pointer;
-        background: #00b7ee;
-        padding: 10px 15px;
+        background: none;
+        padding: 0px;
         color: #fff;
         text-align: center;
         border-radius: 3px;
         overflow: hidden;
     }
     .webuploader-pick-hover {
-        background: #00a2d4;
+        background: none;
     }
     .webuploader-pick-disable {
         opacity: 0.6;

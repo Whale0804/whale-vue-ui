@@ -114,13 +114,16 @@
   .d2-layout-header-aside-content {
     // [布局] 顶栏
     .d2-theme-header {
+      //border-bottom: 2px #EDEEF3 solid;
       // logo区域
       .logo-group {
         transition: width .3s;
+        //border-right: 2px #EDEEF3 solid;
         float: left;
         text-align: center;
+        height: 61px;
         img {
-          height: 60px;
+          height: 65px;
         }
       }
       // 折叠侧边栏切换按钮
@@ -183,7 +186,8 @@
         %d2-theme-container-aside-menu-icon {
           width: 20px;
           text-align: center;
-          font-size: 16px;
+          color: #BFC4CF;
+          font-size: 17px;
         }
         // [菜单] 正常状态
         .el-menu {
@@ -219,7 +223,8 @@
             margin-bottom: 10px;
           }
           span {
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: bold;
           }
         }
         // [菜单] 折叠状态
@@ -276,9 +281,10 @@
             overflow: hidden;
             // 填充式布局组件
             .d2-container-full {
+              border-left: 2px #EDEEF3 solid;
               position: absolute;
               top: 0px;
-              right: 20px;
+              right: 0px;
               bottom: 0px;
               left: 0px;
               display: flex;
