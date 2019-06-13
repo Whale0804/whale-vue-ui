@@ -228,12 +228,16 @@
                 $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(0) + '%');
             },
             onSuccess (file, response) {
+                console.log(response.code)
                 if (response.code) {
                     let $fileStatus = $(`.file-${file.id} .file-status`);
                     if (response.code === 0) {
                         $fileStatus.html('上传成功，转码中');
                     } else if (response.code === 401) {
+                        // 取消并中断文件上传
                         this.uploader.cancelFile(file);
+                        // 在队列中移除文件
+                        this.uploader.removeFile(file, true);
                         $fileStatus.html('上传失败');
                     } else if (response.code === 2) {
                         $fileStatus.html('上传成功');
