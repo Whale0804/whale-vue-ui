@@ -81,7 +81,6 @@
                             ref="uploader"
                             uploadButton="#filePicker"
                             multiple
-
                             @fileChange="fileChange"
                             @progress="onProgress"
                             @success="onSuccess"
@@ -129,7 +128,9 @@
                                 </div>
                                 <div class="progress"></div>
                             </div>
-                            <div class="no-file" v-if="!fileList.length"><i class="iconfont icon-empty-file"></i> 暂无待上传文件</div>
+                            <div class="no-file" v-if="!fileList.length">
+                                <img src="../../assets/empty-workbook.png" alt="">
+                            </div>
                         </div>
                     </el-main>
                 </el-container>
@@ -176,7 +177,6 @@
                 asideWidthCollapse: '65px',
                 actionShow: false,
                 isUploadFiles: true,
-                files: [],
                 fileList: [],
             }
         },
@@ -228,7 +228,6 @@
                 $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(0) + '%');
             },
             onSuccess (file, response) {
-                console.log(response.code)
                 if (response.code) {
                     let $fileStatus = $(`.file-${file.id} .file-status`);
                     if (response.code === 0) {

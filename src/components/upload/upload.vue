@@ -26,11 +26,6 @@
                 type: Number,
                 default: 2048000,
             },
-            // 上传时传给后端的参数，一般为token，key等
-            formData: {
-                type: Object,
-                default: null
-            },
             // 生成formData中文件的key，下面只是个例子，具体哪种形式和后端商议
             keyGenerator: {
                 type: Function,
@@ -74,8 +69,7 @@
                     threads: 5,
                     fileNumLimit: this.fileNumLimit, // 限制上传个数
                     //fileSingleSizeLimit: this.fileSingleSizeLimit, // 限制单个上传图片的大小
-                    formData: this.formData,  // 上传所需参数
-                    chunked: true,          //分片上传
+                    chunked: false,          //分片上传
                     chunkSize: 2048000,    //分片大小
                     duplicate: false,  // 重复上传
                 });
@@ -94,14 +88,27 @@
                 this.uploader.on('uploadSuccess', (file, response) => {
                     this.$emit('success', file, response);
                 });
+                this.uploader.on('uploadAccept', (object, ret) => {
+                  switch (ret.code) {
+                    case 401:
+                      this.uploader.cancelFile(object.file);
+                      that.$router.push("/login")
+                      break;
+                    default:
+                  }
+                });
                 this.uploader.on('uploadError', (file, reason) => {
                     console.error(reason);
                     this.$emit('uploadError', file, reason);
                 });
                 this.uploader.on('uploadBeforeSend', (object ,data, headers) => {
-                $.extend(headers, {
-                    "Authorization": 'Bearer '+that.$utils.cookies.get('token')
-                  });
+                    $.extend(headers, {
+                        "Authorization": 'Bearer '+that.$utils.cookies.get('token')
+                    });
+                    $.extend(data,{
+                        "dir": "",
+                        "ext": data.type
+                    });
                 });
                 this.uploader.on('error', (type) => {
                     let errorMessage = '';
@@ -112,8 +119,7 @@
                     } else {
                         errorMessage = `上传出错！请检查后重新上传！错误代码${type}`;
                     }
-                    console.error(errorMessage);
-                    this.$emit('error', errorMessage);
+                  this.$message.error(errorMessage);
                 });
                 this.uploader.on('uploadComplete', (file, response) => {
                     this.$emit('complete', file, response);
@@ -135,6 +141,9 @@
             },
             getStats() {
                 return this.uploader.getStats();
+            },
+            getFromData() {
+
             },
             getAccept(accept) {
                 switch (accept) {
