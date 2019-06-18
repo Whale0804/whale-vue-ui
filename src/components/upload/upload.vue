@@ -4,6 +4,8 @@
 </template>
 
 <script>
+    import {CheckFileMd5} from '@api/file'
+    let GUID = WebUploader.Base.guid();
     export default {
         name: 'vue-upload',
         props: {
@@ -51,11 +53,51 @@
             };
         },
         mounted() {
-            console.log(WebUploader)
+            this.initRegisterWebUpload();
             this.initWebUpload();
-
         },
         methods: {
+            initRegisterWebUpload() {
+                //注册功能一定要写在前头，否则不会生效
+                WebUploader.Uploader.register({
+                  //在文件发送之前request，此时还没有分片（如果配置了分片的话），可以用来做文件整体md5验证。在文件发送之前request，此时还没有分片（如果配置了分片的话），可以用来做文件整体md5验证。
+                  'before-send-file': 'beforeSendFile',
+                  //在分片发送之前request，可以用来做分片验证，如果此分片已经上传成功了，可返回一个rejected promise来跳过此分片上传
+                  "before-send": "beforeSend",
+                  //在所有分片都上传完毕后，且没有错误后request，用来做分片验证，此时如果promise被reject，当前文件上传会触发错误。
+                  "after-send-file": "afterSendFile"
+                },{
+                    beforeSendFile: function (file) {
+                        let owner = this.owner,
+                            deferred = WebUploader.Deferred();
+                        owner.md5File(file.source).fail(()=>{
+                            deferred.reject();
+                        }).progress(function (percent) {
+                          
+                        }).then(function (md5Value) {
+                            let param = {md5:md5Value}
+                            CheckFileMd5(param).then(res =>{
+                                if(res.exist){
+                                  deferred.reject();
+                                  owner.skipFile(file);
+                                }else {
+                                  deferred.resolve();
+                                  file.uniqueFileName = md5Value;
+                                }
+                            }).catch(err=>{
+
+                            })
+                            console.log(param)
+                        })
+                    },
+                    beforeSend: function(block){
+
+                    },
+                    afterSendFile: function (file) {
+
+                    }
+                });
+            },
             initWebUpload() {
                 let that = this;
                 this.uploader = WebUploader.create({
@@ -71,7 +113,7 @@
                     threads: 5,
                     fileNumLimit: this.fileNumLimit, // 限制上传个数
                     //fileSingleSizeLimit: this.fileSingleSizeLimit, // 限制单个上传图片的大小
-                    chunked: false,          //分片上传
+                    chunked: true,          //分片上传
                     chunkSize: 2048000,    //分片大小
                     duplicate: false,  // 重复上传
                 });
@@ -108,6 +150,7 @@
                         "Authorization": 'Bearer '+that.$utils.cookies.get('token')
                     });
                     $.extend(data,{
+                        "guid": GUID,
                         "dir": "",
                         "ext": data.type
                     });

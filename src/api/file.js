@@ -7,3 +7,11 @@ export function FinisUpload(data) {
         data
     })
 }
+
+export function CheckFileMd5 (data) {
+    return request({
+        url: 'file/check',
+        method: 'post',
+        data
+    })
+}

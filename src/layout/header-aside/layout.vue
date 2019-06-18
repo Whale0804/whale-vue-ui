@@ -231,8 +231,10 @@
             },
             onSuccess (file, response) {
                 let $fileStatus = $(`.file-${file.id} .file-status`);
+
                 if (response.code == 0) {
                     FinisUpload({
+                        guid: response.data.data.Guid,
                         name: response.data.data.Name,
                         chunks: response.data.data.Chunks,
                         path: response.data.filePath
