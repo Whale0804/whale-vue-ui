@@ -51,7 +51,9 @@
             };
         },
         mounted() {
+            console.log(WebUploader)
             this.initWebUpload();
+
         },
         methods: {
             initWebUpload() {

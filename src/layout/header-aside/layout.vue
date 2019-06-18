@@ -152,6 +152,8 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
     import mixinSearch from './mixins/search'
     import vueUpload from '../../components/upload/upload'
+    import {FinisUpload} from "../../api/file";
+
     export default {
         name: 'd2-layout-header-aside',
         mixins: [
@@ -228,19 +230,25 @@
                 $(`.file-${file.id} .file-status`).html((percent * 100).toFixed(0) + '%');
             },
             onSuccess (file, response) {
-                if (response.code) {
-                    let $fileStatus = $(`.file-${file.id} .file-status`);
-                    if (response.code === 0) {
-                        $fileStatus.html('上传成功，转码中');
-                    } else if (response.code === 401) {
-                        // 取消并中断文件上传
-                        this.uploader.cancelFile(file);
-                        // 在队列中移除文件
-                        this.uploader.removeFile(file, true);
-                        $fileStatus.html('上传失败');
-                    } else if (response.code === 2) {
-                        $fileStatus.html('上传成功');
-                    }
+                let $fileStatus = $(`.file-${file.id} .file-status`);
+                if (response.code == 0) {
+                    FinisUpload({
+                        name: response.data.data.Name,
+                        chunks: response.data.data.Chunks,
+                        path: response.data.filePath
+                    }).then(res=>{
+                        console.log(res)
+                    }).catch(err=>{
+                        console.log(err)
+                    })
+                } else if (response.code === 401) {
+                    // 取消并中断文件上传
+                    this.uploader.cancelFile(file);
+                    // 在队列中移除文件
+                    this.uploader.removeFile(file, true);
+                    $fileStatus.html('上传失败');
+                } else if (response.code === 2) {
+                    $fileStatus.html('上传成功');
                 }
             },
             handlePlayAllFile() {
