@@ -4,7 +4,7 @@
 </template>
 
 <script>
-    import {CheckFileMd5} from '@api/file'
+    import {CheckFileMd5,FinisUpload} from '@api/file'
     let GUID = WebUploader.Base.guid();
     export default {
         name: 'vue-upload',
@@ -68,6 +68,7 @@
                   "after-send-file": "afterSendFile"
                 },{
                     beforeSendFile: function (file) {
+                        let $fileStatus = $(`.file-${file.id} .file-status`);
                         let owner = this.owner,
                             deferred = WebUploader.Deferred();
                         owner.md5File(file.source).fail(()=>{
@@ -77,24 +78,39 @@
                         }).then(function (md5Value) {
                             let param = {md5:md5Value}
                             CheckFileMd5(param).then(res =>{
-                                if(res.exist){
-                                  deferred.reject();
-                                  owner.skipFile(file);
+                                if(res.isExist){
+                                    deferred.reject();
+                                    owner.skipFile(file);
+                                    $(`.file-${file.id} .progress`).css('width', 100 + '%');
+                                    $(`.file-${file.id} .file-status`).html(100 + '%');
+                                    $fileStatus.html('上传成功');
                                 }else {
-                                  deferred.resolve();
-                                  file.uniqueFileName = md5Value;
+                                    deferred.resolve();
+                                    file.filehash = md5Value;
                                 }
                             }).catch(err=>{
-
+                                console.log(err)
                             })
-                            console.log(param)
                         })
                     },
                     beforeSend: function(block){
 
                     },
                     afterSendFile: function (file) {
-
+                      let chunksTotal = 0;
+                      if ((chunksTotal = Math.ceil(file.size / 2048000)) >= 1) {
+                        let deferred = WebUploader.Deferred();
+                        FinisUpload({
+                          id: file.id,
+                          name: file.name,
+                          chunks: chunksTotal,
+                        }).then(res=>{
+                          deferred.resolve();
+                        }).catch(err=>{
+                          deferred.reject();
+                        });
+                        return deferred.promise();
+                      }
                     }
                 });
             },

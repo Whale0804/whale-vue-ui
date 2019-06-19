@@ -231,19 +231,7 @@
             },
             onSuccess (file, response) {
                 let $fileStatus = $(`.file-${file.id} .file-status`);
-
-                if (response.code == 0) {
-                    FinisUpload({
-                        guid: response.data.data.Guid,
-                        name: response.data.data.Name,
-                        chunks: response.data.data.Chunks,
-                        path: response.data.filePath
-                    }).then(res=>{
-                        console.log(res)
-                    }).catch(err=>{
-                        console.log(err)
-                    })
-                } else if (response.code === 401) {
+                if (response.code === 401) {
                     // 取消并中断文件上传
                     this.uploader.cancelFile(file);
                     // 在队列中移除文件
