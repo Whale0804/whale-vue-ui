@@ -90,7 +90,7 @@
             </transition>
             <transition name="fade" v-if="actionShow">
                 <div class="upload-btn-item">
-                    <el-button size="medium" type="success" icon="el-icon-folder-add" circle></el-button>
+                    <el-button size="medium" type="success" icon="el-icon-folder-add" @click="handleCreateFolderClick" circle></el-button>
                 </div>
             </transition>
             <transition name="fade">
@@ -136,6 +136,17 @@
                 </el-container>
             </div>
         </transition>
+        <el-dialog title="创建文件夹" :visible.sync="createFolderFormVisible">
+            <el-form :model="form">
+                <el-form-item label="文件夹" :label-width="formLabelWidth">
+                    <el-input v-model="form.name" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="createFolderFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleSaveFolderClick">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -180,6 +191,11 @@
                 actionShow: false,
                 isUploadFiles: true,
                 fileList: [],
+                formLabelWidth: '55px',
+                createFolderFormVisible:false,
+                form: {
+                    name: '',
+                }
             }
         },
         mounted() {
@@ -220,6 +236,12 @@
             ...mapActions('d2admin/menu', [
                 'asideCollapseToggle'
             ]),
+            handleCreateFolderClick(){
+                this.createFolderFormVisible = true;
+            },
+            handleSaveFolderClick: function(){
+
+            },
             fileChange(file) {
                 if (!file.size) return;
                 this.fileList.push(file);

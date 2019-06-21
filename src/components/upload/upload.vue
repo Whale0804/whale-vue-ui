@@ -97,6 +97,7 @@
 
                     },
                     afterSendFile: function (file) {
+                      console.log(file)
                       let chunksTotal = 0;
                       if ((chunksTotal = Math.ceil(file.size / 2048000)) >= 1) {
                         let deferred = WebUploader.Deferred();
@@ -104,6 +105,11 @@
                           id: file.id,
                           name: file.name,
                           chunks: chunksTotal,
+                          filehash:file.filehash,
+                          size:file.size,
+                          type:file.type,
+                          ext:file.ext,
+                          currPath:''
                         }).then(res=>{
                           deferred.resolve();
                         }).catch(err=>{
